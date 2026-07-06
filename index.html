@@ -1,101 +1,818 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raath Sport Shooting Academy</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RAATH SPORT SHOOTING ACADEMY BEHROR</title>
+<!-- Connecting PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 400px; background: white; padding: 20px; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h2 { color: #333; margin-bottom: 5px; }
-        .sub-title { color: #666; font-size: 14px; margin-bottom: 20px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-size: 15px; }
-        input:focus { border-color: #007bff; outline: none; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #0056b3; }
-        .admin-btn { background: #28a745; margin-top: 15px; }
+        :root {
+            --primary: #b45309;       
+            --accent: #d97706;        
+            --text-main: #1e293b;     
+            --text-muted: #64748b;    
+            --border: #cbd5e1;        
+            --success: #16a34a;       
+            --danger: #dc2626;        
+            --dark-block: #1e293b;    
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+        
+        * { 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            position: relative;
+            color: var(--text-main); 
+            min-height: 100vh; 
+            width: 100vw;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #000;
+        }
+
+        /* Full Screen Background Image Custom Overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.ibb.co/T5PV8rS/pexels-tima-miroshnichenko-6091867.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -2;
+        }
+
+        /* Subtle Dark overlay to make elements perfectly readable */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        .hidden { display: none !important; }
+        
+        #login-screen, #register-screen, #app-screen {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header { 
+            background: var(--card-bg); 
+            padding: 15px; 
+            border-bottom: 3px solid var(--primary);
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        .header h1 { font-size: 15px; color: var(--dark-block); font-weight: 900; text-transform: uppercase; margin-top: 5px; letter-spacing: 0.5px; }
+        .header p { font-size: 11px; color: var(--primary); margin-top: 2px; font-weight: 700; text-transform: uppercase; }
+        
+        .live-timer {
+            position: absolute;
+            left: 12px;
+            top: 15px;
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .logout-top-btn {
+            position: absolute;
+            right: 12px;
+            top: 14px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 16px; 
+            padding: 20px; 
+            margin: 12px; 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        h3 { color: var(--primary); font-size: 14px; margin-bottom: 14px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; font-weight: 800; text-transform: uppercase; }
+        
+        /* Mobile Optimized Inputs */
+        .input, select { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border); 
+            font-size: 15px; 
+            background: #ffffff; 
+            color: var(--text-main); 
+            outline: none; 
+            margin-bottom: 14px;
+            height: 48px; /* Minimum recommended touch target size */
+        }
+        
+        .suggest-wrapper { position: relative; width: 100%; }
+        .suggest-box { 
+            position: absolute; top: calc(100% - 14px); left: 0; right: 0; 
+            background: white; border: 1px solid var(--border); border-radius: 10px; 
+            max-height: 160px; overflow-y: auto; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .suggest-item { padding: 12px; cursor: pointer; font-size: 14px; font-weight: 600; border-bottom: 1px solid #f1f5f9; color: var(--dark-block); }
+        .suggest-item:hover { background: #fef3c7; color: var(--primary); }
+
+        .exercise-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .exercise-box { background: #fdfbf7; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .exercise-box label { font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; }
+        
+        .time-selector-container { display: flex; gap: 6px; margin-top: 4px; }
+        .time-selector-container input { width: 55%; border: none; background: transparent; outline: none; font-size: 15px; font-weight: bold; border-bottom: 1px solid var(--border); height: 32px; }
+        .time-selector-container select { width: 45%; padding: 4px; margin-bottom: 0; font-size: 12px; background: #fff; height: 32px; border: 1px solid var(--border); }
+
+        /* Mobile Responsive Buttons */
+        .btn { border: none; border-radius: 10px; padding: 14px; font-weight: 700; cursor: pointer; font-size: 15px; width: 100%; text-align: center; height: 48px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-accent { background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%); color: white; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+
+        .role-grid { display: flex; gap: 10px; margin-bottom: 15px; }
+        .role-option { flex: 1; padding: 14px 5px; border-radius: 10px; border: 1px solid var(--border); background: #ffffff; cursor: pointer; font-weight: bold; text-align: center; font-size: 14px; color: var(--text-muted); height: 48px; display: flex; align-items: center; justify-content: center; }
+        .role-option.selected { border-color: var(--primary); background: rgba(180, 83, 9, 0.08); color: var(--primary); border-width: 2px; }
+
+        /* Fixed Footer Navigation for Mobile UI */
+        .nav { display: flex; background: var(--card-bg); border-top: 1px solid rgba(226,232,240,0.8); position: fixed; bottom: 0; left: 0; right: 0; height: 65px; z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); overflow-x: auto; }
+        .nav-btn { flex: 1; min-width: 75px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; padding: 5px; white-space: nowrap; }
+        .nav-btn.active { color: var(--primary); }
+
+        .chat-container { max-height: 200px; overflow-y: auto; background: #fdfbf7; padding: 10px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
+        .chat-msg { margin-bottom: 8px; padding: 10px 14px; border-radius: 12px; font-size: 13px; max-width: 85%; line-height: 1.4; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .chat-msg.sent { background: #fef3c7; color: #78350f; margin-left: auto; border-bottom-right-radius: 2px; }
+        .chat-msg.received { background: #f1f5f9; color: var(--dark-block); border-left: 4px solid var(--primary); border-bottom-left-radius: 2px; }
+
+        /* Responsive Table Container */
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 8px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; background: #ffffff; min-width: 320px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: var(--text-main); }
+        th { background: #fdfbf7; color: var(--primary); font-weight: bold; text-transform: uppercase; font-size: 11px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🎯 राथ शूटिंग एकेडमी</h2>
-    <div class="sub-title">एडमिशन एवं स्मार्ट स्कोर ट्रैकर</div>
-    
-    <form id="dataForm" autocomplete="off">
-        <input type="text" id="admissionId" placeholder="एडमिशन नंबर (Admission ID)" required>
-        <input type="text" id="studentName" list="studentSuggestions" placeholder="विद्यार्थी का नाम लिखें..." required>
-        <datalist id="studentSuggestions"></datalist>
-        <input type="number" id="shootingScore" placeholder="आज का शूटिंग स्कोर (Score)" min="0" max="400" required>
-        <button type="submit">डेटाबेस में सुरक्षित सेव करें</button>
-    </form>
+    <div id="toast" class="toast hidden" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--dark-block); color: white; padding: 12px 24px; border-radius: 8px; z-index: 10000; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></div>
 
-    <button class="admin-btn" onclick="viewAdminData()">🛡️ एडमिन/कोच लॉगिन</button>
-</div>
+    <!-- ================== 1. LOGIN SCREEN ================== -->
+    <div id="login-screen">
+        <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 450px; margin: 0 auto; width: 100%;">
+            <div class="card" style="margin: 0;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <div style="font-size: 50px; margin-bottom: 5px;">🎯</div>
+                    <h2 style="font-size: 18px; font-weight: 900; color: var(--dark-block); line-height: 1.4; letter-spacing: 0.5px;">RAATH SPORT SHOOTING ACADEMY<br><span style="color:var(--primary);">BEHROR</span></h2>
+                </div>
 
-<script>
-    // ऐप डाउनलोड सिस्टम (Service Worker) - 100% वर्किंग लिंक के साथ
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log("SW Registered Successfully"))
-            .catch(err => console.log("SW Registration Failed", err));
-        });
-    }
+                <div class="role-grid">
+                    <div id="opt-shooter" class="role-option selected" onclick="selectRole('shooter')">Shooter Login</div>
+                    <div id="opt-academy" class="role-option" onclick="selectRole('academy')">Academy Login</div>
+                </div>
 
-    // पुराने नामों को स्मार्ट सजेशन लिस्ट में लोड करना
-    function loadNameSuggestions() {
-        const allData = JSON.parse(localStorage.getItem('academyDatabase')) || [];
-        const datalist = document.getElementById('studentSuggestions');
-        datalist.innerHTML = '';
-        const uniqueNames = [...new Set(allData.map(item => item.name))];
-        uniqueNames.forEach(name => {
-            const option = document.createElement('option');
-            option.value = name;
-            datalist.appendChild(option);
-        });
-    }
+                <input id="login-id" class="input" placeholder="Enter Username" autocomplete="off">
+                <input id="login-pass" type="password" class="input" placeholder="Enter Password" autocomplete="new-password">
+                
+                <button class="btn btn-accent" style="margin-top: 5px;" onclick="handleLogin()">🔐 Login</button>
+                <button id="reg-trigger-btn" class="btn btn-success" style="margin-top: 15px; background: transparent; color: var(--success); border: 2px solid var(--success);" onclick="switchScreen('register-screen')">📝 Register New Shooter</button>
+            </div>
+        </div>
+    </div>
 
-    // डेटा सेविंग और ऑटोमैटिक रिफ्रेश बिना हैंग के
-    document.getElementById('dataForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const id = document.getElementById('admissionId').value.trim();
-        const name = document.getElementById('studentName').value.trim();
-        const score = document.getElementById('shootingScore').value;
-        const date = new Date().toLocaleString();
+    <!-- ================== 2. REGISTRATION FORM ================== -->
+    <div id="register-screen" class="hidden">
+        <div class="header">
+            <h1>Shooter Registration Form</h1>
+            <p>Raath Sport Shooting Academy</p>
+        </div>
+        <div style="flex: 1; overflow-y: auto; padding: 10px 0; margin-bottom: 20px;">
+            <div class="card">
+                <h3>📋 Shooter Details</h3>
+                <div class="exercise-grid">
+                    <input id="reg-fname" class="input" placeholder="First Name" autocomplete="off">
+                    <input id="reg-lname" class="input" placeholder="Last Name" autocomplete="off">
+                </div>
+                <input id="reg-address" class="input" placeholder="Address / Location" autocomplete="off">
+                <select id="reg-gender" class="input">
+                    <option value="Male">Male (Monthly Fee: ₹2500)</option>
+                    <option value="Female">Female (Monthly Fee: ₹2000)</option>
+                </select>
+                <input id="reg-mobile" type="number" class="input" placeholder="Mobile Number" autocomplete="off">
+                <input id="reg-email" class="input" placeholder="Email ID" autocomplete="off">
+                <input id="reg-event" class="input" placeholder="Event (e.g. 10m Air Rifle)" autocomplete="off">
+                
+                <h3>🔒 Create Security Credentials</h3>
+                <input id="reg-user" class="input" placeholder="Create Username (e.g. ABHISHEK)" autocomplete="off">
+                <input id="reg-pass" type="password" class="input" placeholder="Create Password" autocomplete="new-password">
+                
+                <button class="btn btn-accent" onclick="submitRegistrationForm()">Send Request to Coach</button>
+                <button class="btn btn-danger" style="margin-top:12px; background:transparent; color:var(--danger); border:1px solid var(--danger);" onclick="switchScreen('login-screen')">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-        const studentData = { id, name, score, date };
-        let allData = JSON.parse(localStorage.getItem('academyDatabase')) || [];
-        allData.push(studentData);
-        localStorage.setItem('academyDatabase', JSON.stringify(allData));
+    <!-- ================== 3. MAIN APP VIEWPORT ================== -->
+    <div id="app-screen" class="hidden">
+        <div class="header">
+            <div id="top-left-timer" class="live-timer">Loading...</div>
+            <h1>RAATH ACADEMY</h1>
+            <p id="welcome-subtitle"></p>
+            <button class="logout-top-btn" onclick="handleLogout()">Logout</button>
+        </div>
+        <div id="main-content" style="flex: 1; padding-bottom: 80px; overflow-y: auto;"></div>
+        <div id="bottom-nav" class="nav"></div>
+    </div>
 
-        alert(`✅ ${name} का स्कोर सुरक्षित सेव हो गया है!`);
-        document.getElementById('dataForm').reset();
-        loadNameSuggestions();
-    });
+    <script>
+        let appState = {
+            approvedShooters: {
+                "ABHISHEK SHARMA": { pass: "99999", fname: "Abhishek", lname: "Sharma", address: "Behror", gender: "Male", mobile: "9999911111", joinDate: "2026-01-10", event: "10m Air Rifle", active: true, strikes: 0, blocked: false },
+                "AMAN YADAV": { pass: "88888", fname: "Aman", lname: "Yadav", address: "Alwar", gender: "Male", mobile: "8888822222", joinDate: "2026-02-15", event: "10m Air Pistol", active: true, strikes: 0, blocked: false }
+            }, 
+            pendingRequests: [],
+            activeLogs: [],
+            shooterSchedules: {},
+            historyLog: {},
+            chatHistory: [
+                { shooter: "ABHISHEK SHARMA", sender: "ABHISHEK SHARMA", msg: "Jai Hind Sir, I have submitted today's practice score." },
+                { shooter: "ABHISHEK SHARMA", sender: "Coach", msg: "Excellent, try to increase your holding time slightly." }
+            ],
+            laneMatrix: { "Lane 1": "--", "Lane 2": "--", "Lane 3": "--", "Lane 4": "--", "Lane 5": "--", "Lane 6": "--" },
+            feesRegister: {}
+        };
 
-    // कोच पासवर्ड सिस्टम
-    function viewAdminData() {
-        const password = prompt("कोच सर, सुरक्षा पासवर्ड दर्ज करें:");
-        if (password === "raath777") { 
-            let allData = localStorage.getItem('academyDatabase');
-            if (!allData || JSON.parse(allData).length === 0) {
-                alert("📂 डेटाबेस अभी खाली है।");
-            } else {
-                let formattedData = "📜 --- राथ एकेडमी: वास्तविक रिकॉर्ड --- \n\n";
-                JSON.parse(allData).forEach((item, index) => {
-                    formattedData += `${index + 1}. [ID: ${item.id}] | नाम: ${item.name} | स्कोर: ${item.score} | दिनांक: ${item.date}\n`;
-                });
-                alert(formattedData);
-            }
-        } else {
-            alert("❌ गलत पासवर्ड।");
+        let currentRole = 'shooter';
+        let loggedInUser = "";
+        let activeTab = 'home';
+        let lastResetDate = "";
+
+        function showNotification(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 3500);
         }
-    }
 
-    window.onload = loadNameSuggestions;
-</script>
+        function startLiveClock() {
+            setInterval(() => {
+                let now = new Date();
+                let dateStr = now.toLocaleDateString('en-GB');
+                let timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                let timerDiv = document.getElementById('top-left-timer');
+                if (timerDiv) timerDiv.innerHTML = `${dateStr}<br>${timeStr}`;
+
+                if (lastResetDate && lastResetDate !== dateStr) {
+                    appState.activeLogs = [];
+                    appState.laneMatrix = { "Lane 1": "--", "Lane 2": "--", "Lane 3": "--", "Lane 4": "--", "Lane 5": "--", "Lane 6": "--" };
+                    if (document.getElementById('app-screen').classList.contains('hidden') === false) { renderContent(); }
+                }
+                lastResetDate = dateStr;
+            }, 1000);
+        }
+
+        function switchScreen(screenId) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function selectRole(role) {
+            currentRole = role;
+            document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById('opt-' + role).classList.add('selected');
+            document.getElementById('login-id').value = ""; document.getElementById('login-pass').value = "";
+        }
+
+        function submitRegistrationForm() {
+            const fname = document.getElementById('reg-fname').value.trim();
+            const lname = document.getElementById('reg-lname').value.trim();
+            const username = document.getElementById('reg-user').value.toUpperCase().trim();
+            const password = document.getElementById('reg-pass').value.trim();
+            const mobile = document.getElementById('reg-mobile').value.trim();
+            const gender = document.getElementById('reg-gender').value;
+            const address = document.getElementById('reg-address').value.trim();
+            const event = document.getElementById('reg-event').value.trim();
+
+            if (!fname || !username || !password || !mobile) {
+                showNotification("⚠️ Please fill all required fields!"); return;
+            }
+
+            appState.pendingRequests.push({
+                fname, lname, username, password, mobile, gender, address, event, joinDate: new Date().toLocaleDateString('en-GB')
+            });
+
+            showNotification("🎉 Request sent to Coach! Please login after approval.");
+            switchScreen('login-screen');
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('login-id').value.toUpperCase().trim();
+            const pass = document.getElementById('login-pass').value.trim();
+
+            if (currentRole === 'shooter') {
+                let resolvedUser = smartResolveShooter(user);
+                if (resolvedUser && appState.approvedShooters[resolvedUser]) {
+                    let shooter = appState.approvedShooters[resolvedUser];
+                    
+                    if (shooter.blocked) {
+                        alert("Your ID is blocked because you did not complete your schedules. Please contact your coach to unblock.");
+                        return;
+                    }
+
+                    if (shooter.pass === pass && shooter.active) {
+                        loggedInUser = resolvedUser;
+                        let exists = appState.activeLogs.find(l => l.name === loggedInUser);
+                        if (!exists) appState.activeLogs.unshift({ name: loggedInUser, loginTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), exitTime: "08:00 PM" });
+                    } else {
+                        showNotification("❌ Invalid Username or Password!"); return;
+                    }
+                } else {
+                    showNotification("❌ Invalid Username or Password!"); return;
+                }
+            } else {
+                // Customized Coach Credentials
+                if (user === "ABHISHEK SHARMA" && pass === "6375413026") { loggedInUser = "Academy Owner & Coach"; } 
+                else { showNotification("❌ Invalid Academy Credentials!"); return; }
+            }
+
+            switchScreen('app-screen');
+            document.getElementById('welcome-subtitle').innerText = currentRole === 'academy' ? "Welcome Abhishek Sharma (Coach Dashboard)" : `Shooter Panel: ${loggedInUser}`;
+            buildNav();
+            switchTab('home');
+        }
+
+        function handleLogout() {
+            switchScreen('login-screen');
+            selectRole(currentRole);
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if(activeBtn) activeBtn.classList.add('active');
+            renderContent();
+        }
+
+        function smartResolveShooter(input) {
+            if (!input) return "";
+            let matches = Object.keys(appState.approvedShooters).filter(k => k.startsWith(input) && appState.approvedShooters[k].active);
+            if (matches.length === 1) return matches[0];
+            return input;
+        }
+
+        function handleNameInputTyping(inputId, wrapperId) {
+            let val = document.getElementById(inputId).value.toUpperCase().trim();
+            let wrap = document.getElementById(wrapperId);
+            wrap.innerHTML = "";
+            if (!val) return;
+
+            let matches = Object.keys(appState.approvedShooters).filter(k => k.includes(val) && appState.approvedShooters[k].active);
+            if (matches.length > 0) {
+                let box = document.createElement('div'); box.className = "suggest-box";
+                matches.forEach(m => {
+                    let item = document.createElement('div'); item.className = "suggest-item";
+                    item.innerText = m;
+                    item.onclick = function() {
+                        document.getElementById(inputId).value = m;
+                        wrap.innerHTML = "";
+                        if(inputId === 'm-search') trackFullPerforma();
+                        if(inputId === 'chat-coach-target') loadCoachSideChat();
+                        if(inputId === 'search-shooter-input') { }
+                        if(inputId === 'f-user') { }
+                        if(inputId === 'f-search') searchShooterFees();
+                    };
+                    box.appendChild(item);
+                });
+                wrap.appendChild(box);
+            }
+        }
+
+        function buildNav() {
+            const nav = document.getElementById('bottom-nav'); nav.innerHTML = '';
+            const navConfigs = {
+                shooter: [
+                    {id:'home', icon:'🏠', label:'Schedule'},
+                    {id:'add_score', icon:'🎯', label:'Submit Score'},
+                    {id:'shooter_chat', icon:'💬', label:'Coach Inbox'}
+                ],
+                academy: [
+                    {id:'home', icon:'🏛️', label:'Live Range'},
+                    {id:'lane_assign', icon:'🎯', label:'Lanes (6)'},
+                    {id:'assign_box', icon:'⚙️', label:'Scheduler'},
+                    {id:'sh_master', icon:'👥', label:'Shooters Index'},
+                    {id:'fees_manager', icon:'💰', label:'Fee Tracker'},
+                    {id:'coach_chat', icon:'💬', label:'Chat Room'},
+                    {id:'requests_list', icon:'📩', label:'Requests'}
+                ]
+            };
+            navConfigs[currentRole].forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `nav-btn ${item.id === activeTab ? 'active' : ''}`;
+                btn.id = `nav-${item.id}`; btn.onclick = () => switchTab(item.id);
+                btn.innerHTML = `<span style="font-size:18px;">${item.icon}</span><span style="font-size:10px; margin-top:3px;">${item.label}</span>`;
+                nav.appendChild(btn);
+            });
+        }
+
+        function handleTaskStatus(status) {
+            let shooter = appState.approvedShooters[loggedInUser];
+            if (status === 'complete') {
+                alert("👏 Clapping! Excellent job completing your schedule today!");
+                shooter.strikes = 0; 
+            } else {
+                shooter.strikes = (shooter.strikes || 0) + 1;
+                if (shooter.strikes >= 3) {
+                    shooter.blocked = true;
+                    alert("Your ID has been blocked because you did not complete your schedules. Please contact your coach to unblock.");
+                    handleLogout();
+                    return;
+                } else {
+                    alert("Please contact your coach immediately!");
+                }
+            }
+            renderContent();
+        }
+
+        function renderContent() {
+            const container = document.getElementById('main-content'); container.innerHTML = "";
+            
+            if (currentRole === 'shooter') {
+                if (activeTab === 'home') {
+                    let sched = appState.shooterSchedules[loggedInUser] || appState.shooterSchedules["ALL"] || { holding: "--", dry: "--", shot: "--", rest: "--" };
+                    let gender = appState.approvedShooters[loggedInUser].gender;
+                    let baseFees = gender === 'Female' ? 2000 : 2500;
+                    
+                    let ledger = appState.feesRegister[loggedInUser] || {};
+                    let totalDue = 0;
+                    let totalAdv = 0;
+                    Object.keys(ledger).forEach(m => {
+                        totalDue += ledger[m].due || 0;
+                        totalAdv += ledger[m].advance || 0;
+                    });
+
+                    container.innerHTML = `
+                        <div class="card" style="background: #fffbeb; border: 1px solid var(--primary);">
+                            <h3>💰 Monthly Fees Status</h3>
+                            <p style="font-size:13px; margin-bottom:5px;">Base Monthly Fee: <b>₹${baseFees}</b> (${gender})</p>
+                            ${totalDue > 0 ? `<p style="color:var(--danger); font-weight:bold;">⚠️ Total Pending Due: ₹${totalDue}</p>` : `<p style="color:var(--success); font-weight:bold;">✓ Fee is completely cleared!</p>`}
+                            ${totalAdv > 0 ? `<p style="color:var(--success); font-weight:bold;">✨ Total Advance Balance: ₹${totalAdv}</p>` : ''}
+                        </div>
+                        <div class="card">
+                            <h3>📋 Today's Training Schedule</h3>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px; margin-bottom:15px;">
+                                <div class="exercise-box"><label>Holding Time</label><div><b>${sched.holding}</b></div></div>
+                                <div class="exercise-box"><label>Dry Practice</label><div><b>${sched.dry}</b></div></div>
+                                <div class="exercise-box"><label>Live Shots</label><div><b>${sched.shot}</b></div></div>
+                                <div class="exercise-box"><label>Rest Time</label><div><b>${sched.rest}</b></div></div>
+                            </div>
+                            <h3>⚙️ Update Task Status</h3>
+                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                <button class="btn btn-success" onclick="handleTaskStatus('complete')">✅ Complete</button>
+                                <button class="btn btn-danger" onclick="handleTaskStatus('incomplete')">❌ Incomplete</button>
+                            </div>
+                            <p style="font-size:12px; color:var(--text-muted); margin-top:8px; font-weight: 600;">Strikes: ${appState.approvedShooters[loggedInUser].strikes || 0} / 3 (3 Strikes = Auto Block Account)</p>
+                        </div>`;
+                } else if (activeTab === 'add_score') {
+                    container.innerHTML = `
+                        <div class="card">
+                            <h3>🎯 Save Daily Performance Score</h3>
+                            <input id="sh-shots" type="number" class="input" placeholder="Total Shots Fired">
+                            <input id="sh-score" type="number" class="input" placeholder="Total Score Achieved">
+                            <button class="btn btn-accent" onclick="saveShooterScore()">Save Record</button>
+                        </div>`;
+                } else if (activeTab === 'shooter_chat') {
+                    let msgs = appState.chatHistory.filter(c => c.shooter === loggedInUser);
+                    container.innerHTML = `
+                        <div class="card">
+                            <h3>💬 Coach Inbox & Live Messenger</h3>
+                            <div class="chat-container" id="sh-chat-area">${msgs.map(m => `<div class="chat-msg ${m.sender==='Coach'?'received':'sent'}"><b>${m.sender}:</b> ${m.msg}</div>`).join('')}</div>
+                            <input id="sh-msg-input" class="input" placeholder="Type a message to Coach...">
+                            <button class="btn btn-accent" onclick="sendShooterMessage()">Send Message</button>
+                        </div>`;
+                }
+            } 
+            else if (currentRole === 'academy') {
+                if (activeTab === 'home') {
+                    container.innerHTML = `
+                        <div class="card">
+                            <h3>👥 Live Attendance Range Log</h3>
+                            <div class="table-responsive">
+                                <table>
+                                    <tr><th>Shooter Name</th><th>Entry</th><th>Exit</th></tr>
+                                    ${appState.activeLogs.length === 0 ? '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No shooters logged in today</td></tr>' : ''}
+                                    ${appState.activeLogs.map(l => `<tr><td><b>${l.name}</b></td><td>${l.loginTime}</td><td style="color:var(--danger); font-weight:bold;">${l.exitTime}</td></tr>`).join('')}
+                                </table>
+                            </div>
+                        </div>`;
+                } else if (activeTab === 'lane_assign') {
+                    container.innerHTML = `
+                        <div class="card">
+                            <h3>🎯 6 Lane Seating Assignments</h3>
+                            <div style="display:grid; grid-template-columns:1fr; gap:12px;">
+                                ${Object.keys(appState.laneMatrix).map(lane => `
+                                    <div style="background:#fdfbf7; padding:12px; border-radius:10px; border:1px solid #e2e8f0;" class="suggest-wrapper">
+                                        <b style="color:var(--primary); font-size:14px;">${lane}:</b>
+                                        <input id="lane-input-${lane.replace(' ','')}" class="input" style="margin-top:6px; margin-bottom:6px;" value="${appState.laneMatrix[lane]}" oninput="handleNameInputTyping('lane-input-${lane.replace(' ','')}', 'suggest-${lane.replace(' ','')}')">
+                                        <div id="suggest-${lane.replace(' ','')}"></div>
+                                        <button class="btn btn-accent" style="height:36px; padding:0 10px; font-size:13px;" onclick="saveLaneSetting('${lane}')">Assign Lane Slot</button>
+                                    </div>`).join('')}
+                            </div>
+                        </div>`;
+                } else if (activeTab === 'assign_box') {
+                    container.innerHTML = `
+                        <div class="card suggest-wrapper">
+                            <h3>⚙️ Broadcast Task Scheduler</h3>
+                            <input id="search-shooter-input" class="input" placeholder="🔍 Enter Target Name or type 'ALL'" value="ALL" oninput="handleNameInputTyping('search-shooter-input', 'broad-suggest')">
+                            <div id="broad-suggest"></div>
+                            <div class="exercise-grid">
+                                <div class="exercise-box"><label>Holding Duration</label><div class="time-selector-container"><input id="co-hold" type="number" placeholder="30"><select id="co-hold-unit"><option>Min</option><option>Hour</option></select></div></div>
+                                <div class="exercise-box"><label>Dry Practice</label><div class="time-selector-container"><input id="co-dry" type="number" placeholder="20"><select id="co-dry-unit"><option>Min</option><option>Hour</option></select></div></div>
+                            </div>
+                            <button class="btn btn-accent" style="margin-top:8px;" onclick="sendCustomTraining()">Broadcast Training Plan</button>
+                        </div>`;
+                } 
+                else if (activeTab === 'sh_master') {
+                    container.innerHTML = `
+                        <div class="card suggest-wrapper">
+                            <h3>👥 Manage Shooter Profiles & Ledger</h3>
+                            <input id="m-search" class="input" placeholder="🔍 Type name to open complete performa..." oninput="handleNameInputTyping('m-search', 'master-suggest')">
+                            <div id="master-suggest"></div>
+                            <div id="performa-display-box" style="margin-top:12px;"></div>
+                        </div>
+                        <div class="card">
+                            <h3>📋 All Registered Shooters Index</h3>
+                            <div style="max-height: 280px; overflow-y: auto;">
+                                ${Object.keys(appState.approvedShooters).map(name => {
+                                    let sh = appState.approvedShooters[name];
+                                    return `
+                                    <div style="display:flex; flex-direction:column; padding:12px; border-bottom:1px solid #e2e8f0; background: ${sh.blocked ? '#fee2e2':'transparent'}; gap:8px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                                            <span><b>${name}</b> (${sh.gender}) ${sh.blocked ? '<b style="color:red;">[BLOCKED]</b>':''}</span>
+                                        </div>
+                                        <div style="display:flex; gap:6px; flex-wrap: wrap;">
+                                            <button class="btn btn-accent" style="width:auto; flex:1; height:34px; padding:0 8px; font-size:12px;" onclick="viewShooterForm('${name}')">View Form</button>
+                                            ${sh.blocked ? `<button class="btn btn-success" style="width:auto; flex:1; height:34px; padding:0 8px; font-size:12px;" onclick="unblockShooter('${name}')">Unblock</button>` : ''}
+                                            <button class="btn btn-danger" style="width:auto; flex:1; height:34px; padding:0 8px; font-size:12px;" onclick="removeShooter('${name}')">Remove</button>
+                                        </div>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>`;
+                } 
+                else if (activeTab === 'fees_manager') {
+                    container.innerHTML = `
+                        <div class="card suggest-wrapper">
+                            <h3>💰 Automated Fee Submission Portal</h3>
+                            <input id="f-user" class="input" placeholder="Type Shooter Name (e.g. ABHISHEK)" oninput="handleNameInputTyping('f-user', 'fees-suggest')">
+                            <div id="fees-suggest"></div>
+                            <select id="f-month" class="input">
+                                <option>January</option><option>February</option><option>March</option>
+                                <option>April</option><option>May</option><option>June</option>
+                                <option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option>
+                            </select>
+                            <input id="f-amount" type="number" class="input" placeholder="Enter Amount to Pay (INR)">
+                            <button class="btn btn-accent" onclick="addFeesPayment()">Submit Fees Entry</button>
+                        </div>
+                        <div class="card suggest-wrapper">
+                            <h3>🔍 Audit Fee Ledgers</h3>
+                            <input id="f-search" class="input" placeholder="Type shooter name to search history..." oninput="handleNameInputTyping('f-search', 'fees-check-suggest')">
+                            <div id="fees-check-suggest"></div>
+                            <button class="btn btn-success" style="margin-top:5px;" onclick="searchShooterFees()">Search Fee Ledger</button>
+                            <div class="table-responsive">
+                                <div id="fees-result-table" style="margin-top:12px;"></div>
+                            </div>
+                        </div>`;
+                } else if (activeTab === 'coach_chat') {
+                    container.innerHTML = `
+                        <div class="card suggest-wrapper">
+                            <h3>💬 Central Shooter Chat Hub</h3>
+                            <input id="chat-coach-target" class="input" placeholder="Type shooter name to open chat..." oninput="handleNameInputTyping('chat-coach-target', 'chat-suggest')">
+                            <div id="chat-suggest"></div>
+                            <div class="chat-container" id="co-chat-box"></div>
+                            <input id="co-msg-input" class="input" placeholder="Type your reply here...">
+                            <button class="btn btn-success" onclick="sendCoachReply()">Send Message</button>
+                        </div>`;
+                } else if (activeTab === 'requests_list') {
+                    container.innerHTML = `
+                        <div class="card">
+                            <h3>📩 Pending Approvals Box</h3>
+                            ${appState.pendingRequests.length === 0 ? '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:10px;">No pending registration requests available.</p>' : ''}
+                            ${appState.pendingRequests.map((req, index) => `
+                                <div style="background:#fdfbf7; border:1px solid #e2e8f0; padding:14px; border-radius:10px; margin-bottom:10px; font-size:13px; line-height:1.5;">
+                                    <p><b>Name:</b> ${req.fname} ${req.lname || ''} (${req.gender})</p>
+                                    <p><b>Username:</b> ${req.username} | <b>Mobile:</b> ${req.mobile}</p>
+                                    <p><b>Event:</b> ${req.event || 'N/A'} | <b>Loc:</b> ${req.address}</p>
+                                    <button class="btn btn-success" style="padding:0; height:36px; font-size:13px; margin-top:8px;" onclick="acceptRequest(${index})">Approve & Register</button>
+                                </div>`).join('')}
+                        </div>`;
+                }
+            }
+        }
+
+        function saveLaneSetting(lane) {
+            let idStr = 'lane-input-' + lane.replace(' ','');
+            let val = document.getElementById(idStr).value.toUpperCase().trim();
+            let resolved = smartResolveShooter(val);
+            appState.laneMatrix[lane] = resolved || "--";
+            document.getElementById(idStr).value = resolved;
+            showNotification(`🎯 Slot Locked! ${lane} -> ${resolved}`);
+        }
+
+        function sendCustomTraining() {
+            let target = document.getElementById('search-shooter-input').value.toUpperCase().trim();
+            target = smartResolveShooter(target);
+            const h = (document.getElementById('co-hold').value || "30") + " " + document.getElementById('co-hold-unit').value;
+            const d = (document.getElementById('co-dry').value || "20") + " " + document.getElementById('co-dry-unit').value;
+
+            if (target === "ALL") {
+                Object.keys(appState.approvedShooters).forEach(k => { appState.shooterSchedules[k] = { holding: h, dry: d, shot: "60 Shots", rest: "10 Min" }; });
+                showNotification("📢 Schedule broadcasted successfully to ALL shooters!");
+            } else if (appState.approvedShooters[target]) {
+                appState.shooterSchedules[target] = { holding: h, dry: d, shot: "60 Shots", rest: "10 Min" };
+                showNotification(`📢 Plan sent successfully to ${target}!`);
+            } else {
+                showNotification("⚠️ Please type a valid shooter name!");
+            }
+        }
+
+        function saveShooterScore() {
+            let shots = document.getElementById('sh-shots').value;
+            let score = document.getElementById('sh-score').value;
+            let today = new Date().toLocaleDateString('en-GB');
+
+            if(!shots || !score) { showNotification("⚠️ Enter both shots and score!"); return; }
+
+            if(!appState.historyLog[today]) appState.historyLog[today] = {};
+            appState.historyLog[today][loggedInUser] = { score: score, shots: shots, time: new Date().toLocaleTimeString() };
+
+            showNotification("🎯 Daily performance score saved successfully!");
+            switchTab('home');
+        }
+
+        function trackFullPerforma() {
+            const val = smartResolveShooter(document.getElementById('m-search').value.toUpperCase().trim());
+            const box = document.getElementById('performa-display-box');
+            if(!val || !appState.approvedShooters[val]) { box.innerHTML = ""; return; }
+            
+            let sh = appState.approvedShooters[val];
+            let today = new Date().toLocaleDateString('en-GB');
+            let todayPractice = (appState.historyLog[today] && appState.historyLog[today][val]) ? `Score: ${appState.historyLog[today][val].score} (${appState.historyLog[today][val].shots} Shots)` : "No score submitted today yet";
+            
+            box.innerHTML = `
+                <div style="background:#fffdf9; border:1px solid var(--primary); padding:14px; border-radius:10px; font-size:13px; line-height:1.6; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <p><b>👤 Full Identity:</b> ${sh.fname} ${sh.lname || ''} (${sh.gender})</p>
+                    <p><b>📅 Registration Date:</b> ${sh.joinDate}</p>
+                    <p><b>🎯 Selected Event:</b> ${sh.event || '10m Rifle'}</p>
+                    <p><b>📞 Mobile Contact:</b> ${sh.mobile}</p>
+                    <p><b>📍 Address Area:</b> ${sh.address}</p>
+                    <p><b>📈 Today's Practice:</b> ${todayPractice}</p>
+                    <p><b>⚠️ Account Status:</b> ${sh.blocked ? '<span style="color:red; font-weight:bold;">Blocked</span>':'Active'} (Strikes: ${sh.strikes || 0}/3)</p>
+                </div>`;
+        }
+
+        function viewShooterForm(name) {
+            let sh = appState.approvedShooters[name];
+            alert(`📝 REGISTERED DATA FORM:\nName: ${sh.fname} ${sh.lname || ''}\nGender: ${sh.gender}\nMobile: ${sh.mobile}\nAddress: ${sh.address}\nEvent: ${sh.event}\nJoined Date: ${sh.joinDate}`);
+        }
+
+        function unblockShooter(name) {
+            if(appState.approvedShooters[name]) {
+                appState.approvedShooters[name].blocked = false;
+                appState.approvedShooters[name].strikes = 0;
+                showNotification(`✔️ Shooter ${name} has been successfully unblocked!`);
+                renderContent();
+            }
+        }
+
+        function removeShooter(name) {
+            if(confirm(`Are you absolutely sure you want to permanently remove ${name} from the academy directory?`)) { 
+                delete appState.approvedShooters[name];
+                showNotification(`❌ Shooter ${name} removed from database.`); 
+                renderContent();
+            }
+        }
+
+        function addFeesPayment() {
+            let user = document.getElementById('f-user').value.toUpperCase().trim();
+            user = smartResolveShooter(user);
+            let month = document.getElementById('f-month').value;
+            let amount = parseInt(document.getElementById('f-amount').value) || 0;
+
+            if (!user || !appState.approvedShooters[user]) {
+                showNotification("⚠️ Please select a valid shooter name!"); return;
+            }
+
+            let gender = appState.approvedShooters[user].gender;
+            let baseFees = gender === 'Female' ? 2000 : 2500;
+
+            if(!appState.feesRegister[user]) appState.feesRegister[user] = {};
+            let previousLedger = appState.feesRegister[user][month] || { paid: 0, advance: 0, due: baseFees };
+
+            let totalPaidNow = amount;
+            let due = previousLedger.due - totalPaidNow;
+            let advance = previousLedger.advance;
+
+            if (due < 0) {
+                advance += Math.abs(due);
+                due = 0;
+            }
+
+            appState.feesRegister[user][month] = { paid: (previousLedger.paid + totalPaidNow), advance: advance, due: due };
+            showNotification(`💰 Fees Ledger Updated! Paid: ₹${amount}, Remaining Due: ₹${due}, Advance Balance: ₹${advance}`);
+            
+            document.getElementById('f-amount').value = ""; document.getElementById('f-user').value = "";
+        }
+
+        function searchShooterFees() {
+            let user = document.getElementById('f-search').value.toUpperCase().trim();
+            user = smartResolveShooter(user);
+            let tableBox = document.getElementById('fees-result-table');
+
+            if(!user || !appState.feesRegister[user] || Object.keys(appState.feesRegister[user]).length === 0) {
+                tableBox.innerHTML = `<p style="font-size:13px; color:var(--danger); font-weight:bold; padding: 10px; text-align:center;">No payment logs available for this user.</p>`; return;
+            }
+
+            let ledger = appState.feesRegister[user];
+            tableBox.innerHTML = `
+                <table>
+                    <tr><th>Month</th><th>Total Paid</th><th>Pending Due</th><th>Advance</th></tr>
+                    ${Object.keys(ledger).map(m => `
+                        <tr><td><b>${m}</b></td><td>₹${ledger[m].paid}</td><td style="color:red; font-weight:bold;">₹${ledger[m].due}</td><td style="color:green; font-weight:bold;">₹${ledger[m].advance}</td></tr>
+                    `).join('')}
+                </table>`;
+        }
+
+        function sendShooterMessage() {
+            let txt = document.getElementById('sh-msg-input').value.trim(); if(!txt) return;
+            appState.chatHistory.push({ shooter: loggedInUser, sender: loggedInUser, msg: txt });
+            document.getElementById('sh-msg-input').value = ""; renderContent();
+        }
+
+        function loadCoachSideChat() {
+            let target = document.getElementById('chat-coach-target').value.toUpperCase().trim();
+            target = smartResolveShooter(target);
+            let box = document.getElementById('co-chat-box');
+            if(!box) return;
+            let filtered = appState.chatHistory.filter(c => c.shooter === target);
+            box.innerHTML = filtered.map(m => `<div class="chat-msg ${m.sender==='Coach'?'sent':'received'}"><b>${m.sender}:</b> ${m.msg}</div>`).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function sendCoachReply() {
+            let target = smartResolveShooter(document.getElementById('chat-coach-target').value.toUpperCase().trim());
+            let txt = document.getElementById('co-msg-input').value.trim(); if(!target || !txt) return;
+            appState.chatHistory.push({ shooter: target, sender: "Coach", msg: txt });
+            document.getElementById('co-msg-input').value = ""; loadCoachSideChat();
+        }
+
+        function acceptRequest(index) {
+            const req = appState.pendingRequests[index];
+            appState.approvedShooters[req.username] = { 
+                pass: req.password, fname: req.fname, lname: req.lname, address: req.address, 
+                gender: req.gender, mobile: req.mobile, event: req.event, joinDate: req.joinDate, active: true, strikes: 0, blocked: false 
+            };
+            appState.pendingRequests.splice(index, 1); showNotification("✔️ Registration request approved & finalized!"); renderContent();
+        }
+
+        startLiveClock();
+    </script>
 </body>
 </html>
