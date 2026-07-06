@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raath Sport Shooting Academy</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; text-align: center; }
         .container { max-width: 400px; background: white; padding: 20px; margin: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -15,7 +16,6 @@
         button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:hover { background: #0056b3; }
         .admin-btn { background: #28a745; margin-top: 15px; }
-        .admin-btn:hover { background: #218838; }
     </style>
 </head>
 <body>
@@ -26,13 +26,8 @@
     
     <form id="dataForm" autocomplete="off">
         <input type="text" id="admissionId" placeholder="एडमिशन नंबर (Admission ID)" required>
-        
-        <!-- list="studentSuggestions" जोड़ने से यह नीचे दी गई लिस्ट से नाम सजेस्ट करेगा -->
         <input type="text" id="studentName" list="studentSuggestions" placeholder="विद्यार्थी का नाम लिखें..." required>
-        
-        <!-- यह जादुई लिस्ट है जो डेटाबेस के पुराने नाम यहाँ दिखाएगी -->
         <datalist id="studentSuggestions"></datalist>
-
         <input type="number" id="shootingScore" placeholder="आज का शूटिंग स्कोर (Score)" min="0" max="400" required>
         <button type="submit">डेटाबेस में सुरक्षित सेव करें</button>
     </form>
@@ -41,20 +36,21 @@
 </div>
 
 <script>
+    // ऐप डाउनलोड सिस्टम (Service Worker) - 100% वर्किंग लिंक के साथ
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("Service Worker Registered"));
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log("SW Registered Successfully"))
+            .catch(err => console.log("SW Registration Failed", err));
+        });
     }
 
-    // ऐप खुलते ही पुराने रजिस्टर्ड बच्चों के नाम सजेशन लिस्ट में लोड करने का फंक्शन
+    // पुराने नामों को स्मार्ट सजेशन लिस्ट में लोड करना
     function loadNameSuggestions() {
         const allData = JSON.parse(localStorage.getItem('academyDatabase')) || [];
         const datalist = document.getElementById('studentSuggestions');
-        datalist.innerHTML = ''; // पुराना साफ़ करें
-
-        // सिर्फ यूनीक (Unique) नाम निकालने के लिए ताकि एक नाम दो बार न दिखे
+        datalist.innerHTML = '';
         const uniqueNames = [...new Set(allData.map(item => item.name))];
-
         uniqueNames.forEach(name => {
             const option = document.createElement('option');
             option.value = name;
@@ -62,34 +58,25 @@
         });
     }
 
-    // फॉर्म सबमिट होने पर
+    // डेटा सेविंग और ऑटोमैटिक रिफ्रेश बिना हैंग के
     document.getElementById('dataForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const id = document.getElementById('admissionId').value.trim();
         const name = document.getElementById('studentName').value.trim();
         const score = document.getElementById('shootingScore').value;
         const date = new Date().toLocaleString();
 
-        if (id.length < 1 || name.length < 2) {
-            alert("❌ कृपया सही विवरण दर्ज करें!");
-            return;
-        }
-
         const studentData = { id, name, score, date };
-
         let allData = JSON.parse(localStorage.getItem('academyDatabase')) || [];
         allData.push(studentData);
         localStorage.setItem('academyDatabase', JSON.stringify(allData));
 
         alert(`✅ ${name} का स्कोर सुरक्षित सेव हो गया है!`);
         document.getElementById('dataForm').reset();
-        
-        // नया नाम जुड़ते ही सजेशन लिस्ट को तुरंत अपडेट करें
         loadNameSuggestions();
     });
 
-    // कोच सर के लिए सुरक्षित डेटा व्यूअर
+    // कोच पासवर्ड सिस्टम
     function viewAdminData() {
         const password = prompt("कोच सर, सुरक्षा पासवर्ड दर्ज करें:");
         if (password === "raath777") { 
@@ -108,9 +95,7 @@
         }
     }
 
-    // ऐप शुरू होते ही सजेशन चालू करें
     window.onload = loadNameSuggestions;
 </script>
-
 </body>
 </html>
