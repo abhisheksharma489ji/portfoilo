@@ -808,6 +808,15 @@
         }
 
         startLiveClock();
+        <script>
+  // ऐप को असली ऐप की तरह इंस्टॉल कराने वाला ट्रिगर
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log("Success: App is ready to be installed!"))
+      .catch(err => console.log("Error registering sw:", err));
+    });
+  }
     </script>
 </body>
 </html>
