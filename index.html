@@ -260,19 +260,14 @@
     </div>
 
     <script>
+        // यहाँ से डिफ़ॉल्ट नामों को हटाकर डेटाबेस पूरी तरह साफ़ कर दिया गया है
         let appState = {
-            approvedShooters: {
-                "ABHISHEK SHARMA": { pass: "99999", fname: "Abhishek", lname: "Sharma", address: "Behror", gender: "Male", mobile: "9999911111", joinDate: "2026-01-10", event: "10m Air Rifle", active: true, strikes: 0, blocked: false },
-                "AMAN YADAV": { pass: "88888", fname: "Aman", lname: "Yadav", address: "Alwar", gender: "Male", mobile: "8888822222", joinDate: "2026-02-15", event: "10m Air Pistol", active: true, strikes: 0, blocked: false }
-            }, 
+            approvedShooters: {}, 
             pendingRequests: [],
             activeLogs: [],
             shooterSchedules: {},
             historyLog: {},
-            chatHistory: [
-                { shooter: "ABHISHEK SHARMA", sender: "ABHISHEK SHARMA", msg: "Jai Hind Sir, I have submitted today's practice score." },
-                { shooter: "ABHISHEK SHARMA", sender: "Coach", msg: "Excellent, try to increase your holding time slightly." }
-            ],
+            chatHistory: [],
             laneMatrix: { "Lane 1": "--", "Lane 2": "--", "Lane 3": "--", "Lane 4": "--", "Lane 5": "--", "Lane 6": "--" },
             feesRegister: {}
         };
