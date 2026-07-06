@@ -3,14 +3,14 @@
   "name": "Raath Sport Shooting Academy",
   "icons": [
     {
-      "src": "icon.png",
-      "type": "image/png",
+      "src": "https://i.ibb.co/1fwX8Try/pexels-tima-miroshnichenko-6090781.jpg",
+      "type": "image/jpeg",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "icon.png",
-      "type": "image/png",
+      "src": "https://i.ibb.co/1fwX8Try/pexels-tima-miroshnichenko-6090781.jpg",
+      "type": "image/jpeg",
       "sizes": "512x512",
       "purpose": "any maskable"
     }
