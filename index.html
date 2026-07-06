@@ -43,6 +43,25 @@
             background-color: #000;
         }
 
+        /* 🔔 CUSTOM APP DOWNLOAD BANNER NOTICE STYLE */
+        #custom-download-banner {
+            background: linear-gradient(135deg, var(--dark-block) 0%, #0f172a 100%);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10001;
+            border-bottom: 2px solid var(--accent);
+            font-family: Arial, sans-serif;
+        }
+        .banner-text { font-size: 13px; text-align: left; font-weight: 600; line-height: 1.3; }
+        .banner-btn { background: var(--success); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap; margin-left: 10px; }
+        .banner-close { color: #94a3b8; background: transparent; border: none; font-size: 16px; margin-left: 12px; cursor: pointer; }
+
         /* Full Screen Background Image Custom Overlay */
         body::before {
             content: "";
@@ -190,6 +209,15 @@
 </head>
 <body>
 
+    <!-- 🔔 1. नया जादुई डाउनलोड नोटिस बैनर (शुरुआत में छुपा रहेगा) -->
+    <div id="custom-download-banner" class="hidden">
+        <div class="banner-text">🎯 Raath Shooting Academy<br><span style="color: var(--accent); font-size: 11px;">क्या आप इस आधिकारिक ऐप को इंस्टॉल करना चाहते हैं?</span></div>
+        <div style="display: flex; align-items: center;">
+            <button class="banner-btn" id="trigger-pwa-download">Download</button>
+            <button class="banner-close" onclick="document.getElementById('custom-download-banner').classList.add('hidden')">✕</button>
+        </div>
+    </div>
+
     <div id="toast" class="toast hidden" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--dark-block); color: white; padding: 12px 24px; border-radius: 8px; z-index: 10000; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></div>
 
     <!-- ================== 1. LOGIN SCREEN ================== -->
@@ -260,7 +288,6 @@
     </div>
 
     <script>
-        // यहाँ से डिफ़ॉल्ट नामों को हटाकर डेटाबेस पूरी तरह साफ़ कर दिया गया है
         let appState = {
             approvedShooters: {}, 
             pendingRequests: [],
@@ -808,15 +835,41 @@
         }
 
         startLiveClock();
-        <script>
-  // ऐप को असली ऐप की तरह इंस्टॉल कराने वाला ट्रिगर
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log("Success: App is ready to be installed!"))
-      .catch(err => console.log("Error registering sw:", err));
-    });
-  }
+
+        // 🎯 2. नया जादुई कोड: डाउनलोड ट्रिगर और पॉप-अप लॉजिक
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // क्रोम के डिफ़ॉल्ट पॉप-अप को रोकें
+            e.preventDefault();
+            // इवेंट को स्टोर करें ताकि हमारे बटन पर काम आ सके
+            deferredPrompt = e;
+            // हमारी कोडिंग वाला कस्टमाइज्ड नोटिस बैनर ऊपर दिखाएं
+            document.getElementById('custom-download-banner').classList.remove('hidden');
+        });
+
+        document.getElementById('trigger-pwa-download').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // डाउनलोड ट्रिगर करें
+                deferredPrompt.prompt();
+                // यूज़र के जवाब का इंतज़ार करें
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                }
+                deferredPrompt = null;
+                // इंस्टॉल शुरू होते ही बैनर छुपाएं
+                document.getElementById('custom-download-banner').classList.add('hidden');
+            } else {
+                // अगर ब्राउज़र ब्लॉक कर रहा हो, तो अल्टरनेटिव तरीका दिखाएं
+                alert("कृपया क्रोम ब्राउज़र के ऊपर कोने में दिए गए 3 डॉट्स (Menu) पर क्लिक करें और 'Install App' या 'Add to Home Screen' चुनें!");
+            }
+        });
+
+        // ऐप इंस्टॉल हो जाने पर बैनर को हमेशा के लिए छुपा दें
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('custom-download-banner').classList.add('hidden');
+            showNotification("🎉 राथ शूटिंग एकेडमी ऐप सफलतापूर्वक आपके फोन में डाउनलोड हो गई है!");
+        });
     </script>
 </body>
 </html>
