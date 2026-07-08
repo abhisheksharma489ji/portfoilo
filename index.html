@@ -859,6 +859,11 @@
             document.getElementById('custom-download-banner').classList.add('hidden');
             showNotification("🎉 Raath Sport Shooting Academy App installed successfully!");
         });
+        if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("Raath Academy App Ready!"))
+    .catch((err) => console.log("Error:", err));
+}
     </script>
 </body>
 </html>
