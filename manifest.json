@@ -3,21 +3,19 @@
   "name": "Raath Sport Shooting Academy",
   "icons": [
     {
-      "src": "https://i.ibb.co/1fwX8Try/pexels-tima-miroshnichenko-6090781.jpg",
-      "type": "image/jpeg",
-      "sizes": "192x192",
-      "purpose": "any maskable"
+      "src": "https://raath-academy.vercel.app/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
     },
     {
-      "src": "https://i.ibb.co/1fwX8Try/pexels-tima-miroshnichenko-6090781.jpg",
-      "type": "image/jpeg",
-      "sizes": "512x512",
-      "purpose": "any maskable"
+      "src": "https://raath-academy.vercel.app/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ],
-  "start_url": "./index.html",
-  "background_color": "#000000",
-  "theme_color": "#b45309",
+  "start_url": "/",
+  "background_color": "#111827",
+  "theme_color": "#16a34a",
   "display": "standalone",
   "orientation": "portrait"
 }
