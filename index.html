@@ -864,6 +864,44 @@
     .then(() => console.log("Raath Academy App Ready!"))
     .catch((err) => console.log("Error:", err));
 }
+        // --- यहाँ से फायरबेस सर्वर का कोड शुरू ---
+
+// 1. तुम्हारी असली चाबी (Firebase Config)
+const firebaseConfig = {
+  apiKey: "AIzaSyAh1JFw076FlplTAgOCGkj0kApao26whQ0",
+  authDomain: "raath-sport-shooting-academy.firebaseapp.com",
+  projectId: "raath-sport-shooting-academy",
+  storageBucket: "raath-sport-shooting-academy.firebasestorage.app",
+  messagingSenderId: "429411563415",
+  appId: "1:429411563415:web:7ca1f1c6b0e895655b76d2",
+  measurementId: "G-1TX1BHGDY1"
+};
+
+// 2. कनेक्शन चालू करें
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+console.log("Raath Academy का इंटरनेट सर्वर से कनेक्शन रेडी है! 🎯");
+
+// 3. डेटा सेव करने का जादुई फंक्शन
+function saveShooterData(shooterName, shooterScore, shooterDetails) {
+  db.collection("shooters").add({
+    name: shooterName,
+    score: shooterScore,
+    details: shooterDetails,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  })
+  .then(() => {
+    alert("डेटा सीधे इंटरनेट सर्वर पर सुरक्षित सेव हो गया! कोच देख सकते हैं।");
+  })
+  .catch((error) => {
+    console.error("सर्वर पर डेटा भेजने में एरर आया: ", error);
+    alert("डेटा सेव नहीं हुआ! इंटरनेट चेक करें।");
+  });
+}
     </script>
 </body>
 </html>
