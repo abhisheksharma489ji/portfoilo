@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAATH SPORT SHOOTING ACADEMY BEHROR</title>
-<!-- Connecting PWA Manifest -->
 <link rel="manifest" href="manifest.json">
-    <!-- गूगल फायरबेस के सर्वर की कोर फाइल्स (SDK) -->
-<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
 <script>
@@ -213,7 +211,6 @@
 </head>
 <body>
 
-    <!-- 🔔 ENGLISH DOWNLOAD BANNER NOTICE (0% Data Changes) -->
     <div id="custom-download-banner" class="hidden">
         <div class="banner-text">🎯 Raath Shooting Academy<br><span style="color: var(--accent); font-size: 11px;">Do you want to download Raath Sport Shooting Academy App on your mobile?</span></div>
         <div style="display: flex; align-items: center;">
@@ -224,7 +221,6 @@
 
     <div id="toast" class="toast hidden" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--dark-block); color: white; padding: 12px 24px; border-radius: 8px; z-index: 10000; font-weight: bold; font-size: 14px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></div>
 
-    <!-- ================== 1. LOGIN SCREEN ================== -->
     <div id="login-screen">
         <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 450px; margin: 0 auto; width: 100%;">
             <div class="card" style="margin: 0;">
@@ -247,7 +243,6 @@
         </div>
     </div>
 
-    <!-- ================== 2. REGISTRATION FORM ================== -->
     <div id="register-screen" class="hidden">
         <div class="header">
             <h1>Shooter Registration Form</h1>
@@ -279,7 +274,6 @@
         </div>
     </div>
 
-    <!-- ================== 3. MAIN APP VIEWPORT ================== -->
     <div id="app-screen" class="hidden">
         <div class="header">
             <div id="top-left-timer" class="live-timer">Loading...</div>
@@ -292,6 +286,21 @@
     </div>
 
     <script>
+        // --- 1. फायरबेस कनेक्शन चालू करें ---
+        if (!firebase.apps.length) {
+            firebase.initializeApp({
+                apiKey: "AIzaSyAh1JFw076FlplTAgOCGkj0kApao26whQ0",
+                authDomain: "raath-sport-shooting-academy.firebaseapp.com",
+                projectId: "raath-sport-shooting-academy",
+                storageBucket: "raath-sport-shooting-academy.firebasestorage.app",
+                messagingSenderId: "429411563415",
+                appId: "1:429411563415:web:7ca1f1c6b0e895655b76d2",
+                measurementId: "G-1TX1BHGDY1"
+            });
+        }
+        const db = firebase.firestore();
+
+        // लोकल डेटा को सर्वर से सिंक करने के लिए स्टेट वैरिएबल
         let appState = {
             approvedShooters: {}, 
             pendingRequests: [],
@@ -307,6 +316,70 @@
         let loggedInUser = "";
         let activeTab = 'home';
         let lastResetDate = "";
+
+        // --- 2. सर्वर से हमेशा के लिए डेटा लोड करने का लाइव कनेक्शन ---
+        function syncWithFirebase() {
+            // शूटर्स प्रोफाइल और अकाउंट स्टेटस लोड करें
+            db.collection("approvedShooters").onSnapshot(snapshot => {
+                appState.approvedShooters = {};
+                snapshot.forEach(doc => { appState.approvedShooters[doc.id] = doc.data(); });
+                if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
+            });
+
+            // नए शूटर्स की पेंडिंग रिक्वेस्ट लोड करें
+            db.collection("pendingRequests").onSnapshot(snapshot => {
+                appState.pendingRequests = [];
+                snapshot.forEach(doc => { appState.pendingRequests.push({ id: doc.id, ...doc.data() }); });
+                if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
+            });
+
+            // हाजिरी (Live Attendance Log) लोड करें
+            db.collection("activeLogs").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+                appState.activeLogs = [];
+                snapshot.forEach(doc => { appState.activeLogs.push(doc.data()); });
+                if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
+            });
+
+            // ट्रेनिंग प्लान / टास्क शेड्यूल लोड करें
+            db.collection("shooterSchedules").onSnapshot(snapshot => {
+                appState.shooterSchedules = {};
+                snapshot.forEach(doc => { appState.shooterSchedules[doc.id] = doc.data(); });
+                if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
+            });
+
+            // परफॉरमेंस और स्कोर्स लोड करें
+            db.collection("historyLog").onSnapshot(snapshot => {
+                appState.historyLog = {};
+                snapshot.forEach(doc => { appState.historyLog[doc.id] = doc.data(); });
+                if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
+            });
+
+            // फीस रजिस्टर लेजर लोड करें
+            db.collection("feesRegister").onSnapshot(snapshot => {
+                appState.feesRegister = {};
+                snapshot.forEach(doc => { appState.feesRegister[doc.id] = doc.data(); });
+                if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
+            });
+
+            // चैट्स लोड करें
+            db.collection("chatHistory").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+                appState.chatHistory = [];
+                snapshot.forEach(doc => { appState.chatHistory.push(doc.data()); });
+                if (activeTab === 'shooter_chat') renderContent();
+                if (activeTab === 'coach_chat') loadCoachSideChat();
+            });
+
+            // लेन्स अरेंजमेंट लोड करें
+            db.collection("laneMatrix").doc("current").onSnapshot(doc => {
+                if (doc.exists) {
+                    appState.laneMatrix = doc.data();
+                    if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
+                }
+            });
+        }
+
+        // सिंकिंग चालू करें
+        syncWithFirebase();
 
         function showNotification(msg) {
             const t = document.getElementById('toast');
@@ -324,9 +397,8 @@
                 if (timerDiv) timerDiv.innerHTML = `${dateStr}<br>${timeStr}`;
 
                 if (lastResetDate && lastResetDate !== dateStr) {
-                    appState.activeLogs = [];
-                    appState.laneMatrix = { "Lane 1": "--", "Lane 2": "--", "Lane 3": "--", "Lane 4": "--", "Lane 5": "--", "Lane 6": "--" };
-                    if (document.getElementById('app-screen').classList.contains('hidden') === false) { renderContent(); }
+                    // नए दिन पर सिर्फ लाइव रेंज अटेंडेंस क्लियर करें
+                    db.collection("activeLogs").get().then(res => { res.forEach(doc => doc.ref.delete()); });
                 }
                 lastResetDate = dateStr;
             }, 1000);
@@ -346,6 +418,7 @@
             document.getElementById('login-id').value = ""; document.getElementById('login-pass').value = "";
         }
 
+        // --- 3. नया शूटर रिक्वेस्ट भेजता है (सर्वर में सेव होगा) ---
         function submitRegistrationForm() {
             const fname = document.getElementById('reg-fname').value.trim();
             const lname = document.getElementById('reg-lname').value.trim();
@@ -360,23 +433,26 @@
                 showNotification("⚠️ Please fill all required fields!"); return;
             }
 
-            appState.pendingRequests.push({
-                fname, lname, username, password, mobile, gender, address, event, joinDate: new Date().toLocaleDateString('en-GB')
+            db.collection("pendingRequests").add({
+                fname, lname, username, password, mobile, gender, address, event, 
+                joinDate: new Date().toLocaleDateString('en-GB'),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                showNotification("🎉 Request sent to Coach! Please login after approval.");
+                switchScreen('login-screen');
             });
-
-            showNotification("🎉 Request sent to Coach! Please login after approval.");
-            switchScreen('login-screen');
         }
 
+        // --- 4. असली लॉगिन वेरिफिकेशन (सर्वर से मैच करेगा) ---
         function handleLogin() {
             const user = document.getElementById('login-id').value.toUpperCase().trim();
             const pass = document.getElementById('login-pass').value.trim();
 
             if (currentRole === 'shooter') {
                 let resolvedUser = smartResolveShooter(user);
-                if (resolvedUser && appState.approvedShooters[resolvedUser]) {
-                    let shooter = appState.approvedShooters[resolvedUser];
-                    
+                let shooter = appState.approvedShooters[resolvedUser];
+
+                if (shooter) {
                     if (shooter.blocked) {
                         alert("Your ID is blocked because you did not complete your schedules. Please contact your coach to unblock.");
                         return;
@@ -384,8 +460,17 @@
 
                     if (shooter.pass === pass && shooter.active) {
                         loggedInUser = resolvedUser;
+                        
+                        // लाइव रेंज हाजिरी को सर्वर पर एंट्री दें
                         let exists = appState.activeLogs.find(l => l.name === loggedInUser);
-                        if (!exists) appState.activeLogs.unshift({ name: loggedInUser, loginTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), exitTime: "08:00 PM" });
+                        if (!exists) {
+                            db.collection("activeLogs").doc(loggedInUser).set({
+                                name: loggedInUser,
+                                loginTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                                exitTime: "08:00 PM",
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
                     } else {
                         showNotification("❌ Invalid Username or Password!"); return;
                     }
@@ -393,9 +478,11 @@
                     showNotification("❌ Invalid Username or Password!"); return;
                 }
             } else {
-                // Customized Coach Credentials
-                if (user === "ABHISHEK SHARMA" && pass === "6375413026") { loggedInUser = "Academy Owner & Coach"; } 
-                else { showNotification("❌ Invalid Academy Credentials!"); return; }
+                if (user === "ABHISHEK SHARMA" && pass === "6375413026") { 
+                    loggedInUser = "Academy Owner & Coach"; 
+                } else { 
+                    showNotification("❌ Invalid Academy Credentials!"); return; 
+                }
             }
 
             switchScreen('app-screen');
@@ -441,8 +528,6 @@
                         wrap.innerHTML = "";
                         if(inputId === 'm-search') trackFullPerforma();
                         if(inputId === 'chat-coach-target') loadCoachSideChat();
-                        if(inputId === 'search-shooter-input') { }
-                        if(inputId === 'f-user') { }
                         if(inputId === 'f-search') searchShooterFees();
                     };
                     box.appendChild(item);
@@ -478,23 +563,31 @@
             });
         }
 
+        // --- 5. स्ट्राइक्स स्टेटस सर्वर पर अपडेट करें ---
         function handleTaskStatus(status) {
             let shooter = appState.approvedShooters[loggedInUser];
+            let currentStrikes = shooter.strikes || 0;
+            let isBlocked = shooter.blocked || false;
+
             if (status === 'complete') {
                 alert("👏 Clapping! Excellent job completing your schedule today!");
-                shooter.strikes = 0; 
+                currentStrikes = 0; 
             } else {
-                shooter.strikes = (shooter.strikes || 0) + 1;
-                if (shooter.strikes >= 3) {
-                    shooter.blocked = true;
+                currentStrikes += 1;
+                if (currentStrikes >= 3) {
+                    isBlocked = true;
                     alert("Your ID has been blocked because you did not complete your schedules. Please contact your coach to unblock.");
-                    handleLogout();
-                    return;
                 } else {
                     alert("Please contact your coach immediately!");
                 }
             }
-            renderContent();
+
+            db.collection("approvedShooters").doc(loggedInUser).update({
+                strikes: currentStrikes,
+                blocked: isBlocked
+            }).then(() => {
+                if (isBlocked) handleLogout();
+            });
         }
 
         function renderContent() {
@@ -553,6 +646,7 @@
                             <input id="sh-msg-input" class="input" placeholder="Type a message to Coach...">
                             <button class="btn btn-accent" onclick="sendShooterMessage()">Send Message</button>
                         </div>`;
+                    setTimeout(() => { let ca = document.getElementById('sh-chat-area'); if(ca) ca.scrollTop = ca.scrollHeight; }, 100);
                 }
             } 
             else if (currentRole === 'academy') {
@@ -666,22 +760,26 @@
                                     <p><b>Name:</b> ${req.fname} ${req.lname || ''} (${req.gender})</p>
                                     <p><b>Username:</b> ${req.username} | <b>Mobile:</b> ${req.mobile}</p>
                                     <p><b>Event:</b> ${req.event || 'N/A'} | <b>Loc:</b> ${req.address}</p>
-                                    <button class="btn btn-success" style="padding:0; height:36px; font-size:13px; margin-top:8px;" onclick="acceptRequest(${index})">Approve & Register</button>
+                                    <button class="btn btn-success" style="padding:0; height:36px; font-size:13px; margin-top:8px;" onclick="acceptRequest('${req.id}')">Approve & Register</button>
                                 </div>`).join('')}
                         </div>`;
                 }
             }
         }
 
+        // --- 6. लेन सेटिंग सर्वर पर सिंक करें ---
         function saveLaneSetting(lane) {
             let idStr = 'lane-input-' + lane.replace(' ','');
             let val = document.getElementById(idStr).value.toUpperCase().trim();
             let resolved = smartResolveShooter(val);
+            
             appState.laneMatrix[lane] = resolved || "--";
-            document.getElementById(idStr).value = resolved;
-            showNotification(`🎯 Slot Locked! ${lane} -> ${resolved}`);
+            db.collection("laneMatrix").doc("current").set(appState.laneMatrix).then(() => {
+                showNotification(`🎯 Slot Locked! ${lane} -> ${resolved}`);
+            });
         }
 
+        // --- 7. शेड्यूल ब्रॉडकास्ट सर्वर पर भेजें ---
         function sendCustomTraining() {
             let target = document.getElementById('search-shooter-input').value.toUpperCase().trim();
             target = smartResolveShooter(target);
@@ -689,28 +787,33 @@
             const d = (document.getElementById('co-dry').value || "20") + " " + document.getElementById('co-dry-unit').value;
 
             if (target === "ALL") {
-                Object.keys(appState.approvedShooters).forEach(k => { appState.shooterSchedules[k] = { holding: h, dry: d, shot: "60 Shots", rest: "10 Min" }; });
+                Object.keys(appState.approvedShooters).forEach(k => {
+                    db.collection("shooterSchedules").doc(k).set({ holding: h, dry: d, shot: "60 Shots", rest: "10 Min" });
+                });
                 showNotification("📢 Schedule broadcasted successfully to ALL shooters!");
             } else if (appState.approvedShooters[target]) {
-                appState.shooterSchedules[target] = { holding: h, dry: d, shot: "60 Shots", rest: "10 Min" };
-                showNotification(`📢 Plan sent successfully to ${target}!`);
+                db.collection("shooterSchedules").doc(target).set({ holding: h, dry: d, shot: "60 Shots", rest: "10 Min" }).then(() => {
+                    showNotification(`📢 Plan sent successfully to ${target}!`);
+                });
             } else {
                 showNotification("⚠️ Please type a valid shooter name!");
             }
         }
 
+        // --- 8. शूटर का परफॉरमेंस स्कोर सर्ver में सेव करें ---
         function saveShooterScore() {
             let shots = document.getElementById('sh-shots').value;
             let score = document.getElementById('sh-score').value;
-            let today = new Date().toLocaleDateString('en-GB');
+            let today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
 
             if(!shots || !score) { showNotification("⚠️ Enter both shots and score!"); return; }
 
-            if(!appState.historyLog[today]) appState.historyLog[today] = {};
-            appState.historyLog[today][loggedInUser] = { score: score, shots: shots, time: new Date().toLocaleTimeString() };
-
-            showNotification("🎯 Daily performance score saved successfully!");
-            switchTab('home');
+            db.collection("historyLog").doc(today).set({
+                [loggedInUser]: { score: score, shots: shots, time: new Date().toLocaleTimeString() }
+            }, { merge: true }).then(() => {
+                showNotification("🎯 Daily performance score saved successfully!");
+                switchTab('home');
+            });
         }
 
         function trackFullPerforma() {
@@ -719,7 +822,7 @@
             if(!val || !appState.approvedShooters[val]) { box.innerHTML = ""; return; }
             
             let sh = appState.approvedShooters[val];
-            let today = new Date().toLocaleDateString('en-GB');
+            let today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
             let todayPractice = (appState.historyLog[today] && appState.historyLog[today][val]) ? `Score: ${appState.historyLog[today][val].score} (${appState.historyLog[today][val].shots} Shots)` : "No score submitted today yet";
             
             box.innerHTML = `
@@ -741,21 +844,21 @@
 
         function unblockShooter(name) {
             if(appState.approvedShooters[name]) {
-                appState.approvedShooters[name].blocked = false;
-                appState.approvedShooters[name].strikes = 0;
-                showNotification(`✔️ Shooter ${name} has been successfully unblocked!`);
-                renderContent();
+                db.collection("approvedShooters").doc(name).update({ blocked: false, strikes: 0 }).then(() => {
+                    showNotification(`✔️ Shooter ${name} has been successfully unblocked!`);
+                });
             }
         }
 
         function removeShooter(name) {
             if(confirm(`Are you absolutely sure you want to permanently remove ${name} from the academy directory?`)) { 
-                delete appState.approvedShooters[name];
-                showNotification(`❌ Shooter ${name} removed from database.`); 
-                renderContent();
+                db.collection("approvedShooters").doc(name).delete().then(() => {
+                    showNotification(`❌ Shooter ${name} removed from database.`); 
+                });
             }
         }
 
+        // --- 9. फीस सबमिशन सर्वर पर सिंक करें ---
         function addFeesPayment() {
             let user = document.getElementById('f-user').value.toUpperCase().trim();
             user = smartResolveShooter(user);
@@ -769,8 +872,8 @@
             let gender = appState.approvedShooters[user].gender;
             let baseFees = gender === 'Female' ? 2000 : 2500;
 
-            if(!appState.feesRegister[user]) appState.feesRegister[user] = {};
-            let previousLedger = appState.feesRegister[user][month] || { paid: 0, advance: 0, due: baseFees };
+            let userLedger = appState.feesRegister[user] || {};
+            let previousLedger = userLedger[month] || { paid: 0, advance: 0, due: baseFees };
 
             let totalPaidNow = amount;
             let due = previousLedger.due - totalPaidNow;
@@ -781,10 +884,12 @@
                 due = 0;
             }
 
-            appState.feesRegister[user][month] = { paid: (previousLedger.paid + totalPaidNow), advance: advance, due: due };
-            showNotification(`💰 Fees Ledger Updated! Paid: ₹${amount}, Remaining Due: ₹${due}, Advance Balance: ₹${advance}`);
-            
-            document.getElementById('f-amount').value = ""; document.getElementById('f-user').value = "";
+            db.collection("feesRegister").doc(user).set({
+                [month]: { paid: (previousLedger.paid + totalPaidNow), advance: advance, due: due }
+            }, { merge: true }).then(() => {
+                showNotification(`💰 Fees Ledger Updated! Paid: ₹${amount}, Remaining Due: ₹${due}, Advance Balance: ₹${advance}`);
+                document.getElementById('f-amount').value = ""; document.getElementById('f-user').value = "";
+            });
         }
 
         function searchShooterFees() {
@@ -806,17 +911,24 @@
                 </table>`;
         }
 
+        // --- 10. चैटिंग मैसेंजर लाइव सर्वर पर सिंक करें ---
         function sendShooterMessage() {
             let txt = document.getElementById('sh-msg-input').value.trim(); if(!txt) return;
-            appState.chatHistory.push({ shooter: loggedInUser, sender: loggedInUser, msg: txt });
-            document.getElementById('sh-msg-input').value = ""; renderContent();
+            db.collection("chatHistory").add({
+                shooter: loggedInUser,
+                sender: loggedInUser,
+                msg: txt,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('sh-msg-input').value = "";
+            });
         }
 
         function loadCoachSideChat() {
             let target = document.getElementById('chat-coach-target').value.toUpperCase().trim();
             target = smartResolveShooter(target);
             let box = document.getElementById('co-chat-box');
-            if(!box) return;
+            if(!box || !target) return;
             let filtered = appState.chatHistory.filter(c => c.shooter === target);
             box.innerHTML = filtered.map(m => `<div class="chat-msg ${m.sender==='Coach'?'sent':'received'}"><b>${m.sender}:</b> ${m.msg}</div>`).join('');
             box.scrollTop = box.scrollHeight;
@@ -825,22 +937,37 @@
         function sendCoachReply() {
             let target = smartResolveShooter(document.getElementById('chat-coach-target').value.toUpperCase().trim());
             let txt = document.getElementById('co-msg-input').value.trim(); if(!target || !txt) return;
-            appState.chatHistory.push({ shooter: target, sender: "Coach", msg: txt });
-            document.getElementById('co-msg-input').value = ""; loadCoachSideChat();
+            
+            db.collection("chatHistory").add({
+                shooter: target,
+                sender: "Coach",
+                msg: txt,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('co-msg-input').value = "";
+                loadCoachSideChat();
+            });
         }
 
-        function acceptRequest(index) {
-            const req = appState.pendingRequests[index];
-            appState.approvedShooters[req.username] = { 
+        // --- 11. कोच पेंडिंग रिक्वेस्ट अप्रूव करता है ---
+        function acceptRequest(docId) {
+            let req = appState.pendingRequests.find(r => r.id === docId);
+            if (!req) return;
+
+            db.collection("approvedShooters").doc(req.username).set({
                 pass: req.password, fname: req.fname, lname: req.lname, address: req.address, 
-                gender: req.gender, mobile: req.mobile, event: req.event, joinDate: req.joinDate, active: true, strikes: 0, blocked: false 
-            };
-            appState.pendingRequests.splice(index, 1); showNotification("✔️ Registration request approved & finalized!"); renderContent();
+                gender: req.gender, mobile: req.mobile, event: req.event, joinDate: req.joinDate, 
+                active: true, strikes: 0, blocked: false 
+            }).then(() => {
+                db.collection("pendingRequests").doc(docId).delete().then(() => {
+                    showNotification("✔️ Registration request approved & finalized!");
+                });
+            });
         }
 
         startLiveClock();
 
-        // 🎯 डाउनलोड ट्रिगर और पॉप-अप लॉजिक
+        // 🎯 डाउनलोड ट्रिगर और पॉप-अप PWA लॉजिक
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -863,49 +990,6 @@
             document.getElementById('custom-download-banner').classList.add('hidden');
             showNotification("🎉 Raath Sport Shooting Academy App installed successfully!");
         });
-        if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js")
-    .then(() => console.log("Raath Academy App Ready!"))
-    .catch((err) => console.log("Error:", err));
-}
-        // --- यहाँ से फायरबेस सर्वर का कोड शुरू ---
-
-// 1. तुम्हारी असली चाबी (Firebase Config)
-const firebaseConfig = {
-  apiKey: "AIzaSyAh1JFw076FlplTAgOCGkj0kApao26whQ0",
-  authDomain: "raath-sport-shooting-academy.firebaseapp.com",
-  projectId: "raath-sport-shooting-academy",
-  storageBucket: "raath-sport-shooting-academy.firebasestorage.app",
-  messagingSenderId: "429411563415",
-  appId: "1:429411563415:web:7ca1f1c6b0e895655b76d2",
-  measurementId: "G-1TX1BHGDY1"
-};
-
-// 2. कनेक्शन चालू करें
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-console.log("Raath Academy का इंटरनेट सर्वर से कनेक्शन रेडी है! 🎯");
-
-// 3. डेटा सेव करने का जादुई फंक्शन
-function saveShooterData(shooterName, shooterScore, shooterDetails) {
-  db.collection("shooters").add({
-    name: shooterName,
-    score: shooterScore,
-    details: shooterDetails,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  })
-  .then(() => {
-    alert("डेटा सीधे इंटरनेट सर्वर पर सुरक्षित सेव हो गया! कोच देख सकते हैं।");
-  })
-  .catch((error) => {
-    console.error("सर्वर पर डेटा भेजने में एरर आया: ", error);
-    alert("डेटा सेव नहीं हुआ! इंटरनेट चेक करें।");
-  });
-}
     </script>
 </body>
 </html>
