@@ -286,7 +286,7 @@
     </div>
 
     <script>
-        // --- 1. फायरबेस कनेक्शन चालू करें ---
+        // --- 1. नया मुंबई सर्वर (Firestore Database) कनेक्शन चालू करें ---
         if (!firebase.apps.length) {
             firebase.initializeApp({
                 apiKey: "AIzaSyAh1JFw076FlplTAgOCGkj0kApao26whQ0",
@@ -340,7 +340,7 @@
                 if (!document.getElementById('app-screen').classList.contains('hidden')) renderContent();
             });
 
-            // ट्रेनिंग प्लान / टास्क शेड्यूल लोड करें
+            // ट्रेनिंग推लान / टास्क शेड्यूल लोड करें
             db.collection("shooterSchedules").onSnapshot(snapshot => {
                 appState.shooterSchedules = {};
                 snapshot.forEach(doc => { appState.shooterSchedules[doc.id] = doc.data(); });
@@ -418,7 +418,7 @@
             document.getElementById('login-id').value = ""; document.getElementById('login-pass').value = "";
         }
 
-        // --- 3. नया शूटर रिक्वेस्ट भेजता है (सर्वर में सेव होगा) ---
+        // --- 3. नया शूटर रिक्वेस्ट भेजता है (सफलता के बाद फॉर्म पूरी तरह खाली/रीसेट होगा) ---
         function submitRegistrationForm() {
             const fname = document.getElementById('reg-fname').value.trim();
             const lname = document.getElementById('reg-lname').value.trim();
@@ -438,8 +438,21 @@
                 joinDate: new Date().toLocaleDateString('en-GB'),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                showNotification("🎉 Request sent to Coach! Please login after approval.");
+                // ✨ फॉर्म के सारे इनपुट बॉक्स एकदम फ्रेश और खाली करने का जादुई कोड:
+                document.getElementById('reg-fname').value = "";
+                document.getElementById('reg-lname').value = "";
+                document.getElementById('reg-address').value = "";
+                document.getElementById('reg-mobile').value = "";
+                document.getElementById('reg-email').value = "";
+                document.getElementById('reg-event').value = "";
+                document.getElementById('reg-user').value = "";
+                document.getElementById('reg-pass').value = "";
+                document.getElementById('reg-gender').selectedIndex = 0;
+
+                alert("🎉 Request sent to Coach! Please login after approval.");
                 switchScreen('login-screen');
+            }).catch((error) => {
+                showNotification("❌ Error: " + error.message);
             });
         }
 
@@ -800,7 +813,7 @@
             }
         }
 
-        // --- 8. शूटर का परफॉरमेंस स्कोर सर्ver में सेव करें ---
+        // --- 8. शूटर का परफॉरमेंस स्कोर सर्वर में सेव करें ---
         function saveShooterScore() {
             let shots = document.getElementById('sh-shots').value;
             let score = document.getElementById('sh-score').value;
@@ -846,14 +859,6 @@
             if(appState.approvedShooters[name]) {
                 db.collection("approvedShooters").doc(name).update({ blocked: false, strikes: 0 }).then(() => {
                     showNotification(`✔️ Shooter ${name} has been successfully unblocked!`);
-                });
-            }
-        }
-
-        function removeShooter(name) {
-            if(confirm(`Are you absolutely sure you want to permanently remove ${name} from the academy directory?`)) { 
-                db.collection("approvedShooters").doc(name).delete().then(() => {
-                    showNotification(`❌ Shooter ${name} removed from database.`); 
                 });
             }
         }
@@ -963,6 +968,14 @@
                     showNotification("✔️ Registration request approved & finalized!");
                 });
             });
+        }
+
+        function removeShooter(name) {
+            if(confirm(`Are you absolutely sure you want to permanently remove ${name} from the academy directory?`)) { 
+                db.collection("approvedShooters").doc(name).delete().then(() => {
+                    showNotification(`❌ Shooter ${name} removed from database.`); 
+                });
+            }
         }
 
         startLiveClock();
